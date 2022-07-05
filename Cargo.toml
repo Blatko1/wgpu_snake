@@ -1,0 +1,17 @@
+[package]
+name = "cycler"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+wgpu = "0.13.1"
+winit = "0.26.1"
+env_logger = "0.9.0"
+pollster = "0.2.5"
+nalgebra = "0.31.0"
+
+[dependencies.bytemuck]
+version = "1.10.0"
+features = ["derive"]
