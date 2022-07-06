@@ -5,8 +5,11 @@ mod map;
 mod snake;
 mod world;
 
+use std::time::{Duration, Instant};
+
 use engine::Engine;
 use graphics::Graphics;
+use pollster::block_on;
 use winit::{
     event::{ElementState, KeyboardInput, VirtualKeyCode},
     event_loop::{ControlFlow, EventLoop},
@@ -21,8 +24,11 @@ fn run() {
         .build(&event_loop)
         .unwrap();
 
-    let mut graphics = Graphics::new(&window);
+    let mut graphics = block_on(Graphics::new(&window));
     let mut engine = Engine::new(&graphics);
+
+    let framerate_delta = Duration::from_secs_f64(1.0 / 60.0);
+    let mut time_delta = Instant::now();
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Poll;
@@ -54,11 +60,14 @@ fn run() {
                 | winit::event::WindowEvent::ScaleFactorChanged {
                     new_inner_size: &mut new_size,
                     ..
-                } => {graphics.resize(new_size); engine.on_resize(&graphics)},
+                } => {
+                    graphics.resize(new_size);
+                    engine.on_resize(&graphics)
+                }
                 _ => (),
             },
             winit::event::Event::RedrawRequested(_) => {
-                engine.update();
+                engine.update(&graphics);
 
                 match engine.render(&graphics) {
                     Ok(_) => (),
@@ -79,7 +88,20 @@ fn run() {
                     Err(e) => eprintln!("ERROR: {}", e),
                 }
             }
-            winit::event::Event::MainEventsCleared => window.request_redraw(),
+            winit::event::Event::MainEventsCleared => {
+                // Regulate to 60 FPS
+                let elapsed = time_delta.elapsed();
+
+                if framerate_delta <= elapsed {
+                    window.request_redraw();
+                    time_delta = Instant::now();
+                } else {
+                    *control_flow = ControlFlow::WaitUntil(
+                        Instant::now() + framerate_delta - elapsed
+                    );
+                }
+            
+            },
             winit::event::Event::DeviceEvent { event, .. } => match event {
                 winit::event::DeviceEvent::MouseMotion { delta } => {
                     engine.input.mouse_input(delta)

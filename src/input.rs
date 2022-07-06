@@ -48,7 +48,13 @@ impl InputManager {
 #[derive(Debug, Clone, Copy)]
 pub struct KeyboardState {
     state: ElementState,
-    keycode: VirtualKeyCode,
+    pub keycode: VirtualKeyCode,
+}
+
+impl KeyboardState {
+    pub fn is_pressed(&self) -> bool {
+        self.state == ElementState::Pressed
+    }
 }
 
 #[derive(Default, Debug, Clone, Copy)]

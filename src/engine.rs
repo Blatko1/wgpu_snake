@@ -5,21 +5,22 @@ use crate::{
 pub struct Engine {
     pub input: InputManager,
     world: World,
+
+    tick_counter: u32
 }
 
 impl Engine {
     pub fn new(gfx: &Graphics) -> Self {
         let input = InputManager::init();
         let world = World::new(gfx);
-        Self { input, world }
+        Self { input, world, tick_counter: 0 }
     }
 
     pub fn render(&self, gfx: &Graphics) -> Result<(), wgpu::SurfaceError> {
-        let backend = &gfx.backend;
         let (frame, view) = gfx.prepare_next_frame()?;
         let view = &view;
 
-        let mut encoder = backend.device.create_command_encoder(
+        let mut encoder = gfx.device.create_command_encoder(
             &wgpu::CommandEncoderDescriptor {
                 label: Some("Main Command Encoder"),
             },
@@ -51,18 +52,27 @@ impl Engine {
             self.world.render(&mut rpass, &gfx);
         }
 
-        backend.queue.submit(Some(encoder.finish()));
+        gfx.queue.submit(Some(encoder.finish()));
         frame.present();
 
         Ok(())
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, gfx: &Graphics) {
         self.process_input();
+
+        self.tick_counter += 1;
+
+        if self.tick_counter >= 10 {
+            self.world.update(gfx);
+            self.tick_counter = 0;
+        }
     }
 
     fn process_input(&mut self) {
         let input = &mut self.input;
+
+        self.world.process_input(input);
 
         input.reset();
     }

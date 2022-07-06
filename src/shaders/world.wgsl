@@ -1,6 +1,9 @@
 struct VertexInput {
-    @location(0) pos: vec3<f32>,
-    @location(1) tex_coord: vec2<f32>,
+    @builtin(vertex_index) vertex_index: u32,
+    @location(0) top_left: vec3<f32>,
+    @location(1) bottom_right: vec2<f32>,
+    @location(2) tex_top_left: vec2<f32>,
+    @location(3) tex_bottom_right: vec2<f32>
 }
 
 struct VertexOutput {
@@ -12,8 +15,37 @@ struct VertexOutput {
 fn vs_main(in: VertexInput) -> VertexOutput {
     var out: VertexOutput;
 
-    out.clip_position = vec4<f32>(in.pos, 1.0);
-    out.tex_coord = in.tex_coord;
+    var pos: vec2<f32>;
+    var left: f32 = in.top_left.x;
+    var right: f32 = in.bottom_right.x;
+    var top: f32 = in.top_left.y;
+    var bottom: f32 = in.bottom_right.y;
+
+    switch(i32(in.vertex_index)) {
+        case 0: {
+            pos = vec2<f32>(left, top);
+            out.tex_coord = vec2<f32>(0.5, 0.1);
+            break;
+        }
+        case 1: {
+            pos = vec2<f32>(right, top);
+            out.tex_coord = vec2<f32>(0.1, 0.5);
+            break;
+        }
+        case 2: {
+            pos = vec2<f32>(left, bottom);
+            out.tex_coord = vec2<f32>(0.9, 0.1);
+            break;
+        }
+        case 3: {
+            pos = vec2<f32>(right, bottom);
+            out.tex_coord = vec2<f32>(0.1, 0.9);
+            break;
+        }
+        default: {}
+    }
+
+    out.clip_position = vec4<f32>(pos, 0.0, 1.0);
 
     return out;
 }
