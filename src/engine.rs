@@ -49,7 +49,7 @@ impl Engine {
                     depth_stencil_attachment: None,
                 });
 
-            self.world.render(&mut rpass, &gfx);
+            self.world.render(&mut rpass);
         }
 
         gfx.queue.submit(Some(encoder.finish()));

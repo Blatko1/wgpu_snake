@@ -183,7 +183,6 @@ impl Renderable for Map {
     fn render<'a>(
         &'a self,
         rpass: &mut wgpu::RenderPass<'a>,
-        gfx: &'a Graphics,
     ) {
         rpass.set_pipeline(&self.pipeline);
 

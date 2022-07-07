@@ -22,7 +22,7 @@ impl Snake {
             mapped_at_creation: false,
         });
 
-        let body = vec![Body { pos: (6, 5).into() }, Body { pos: (7, 5).into() }, Body { pos: (8, 5).into() }];
+        let body = vec![Body::new(6, 5), Body::new(7, 5), Body::new(8, 5)];
 
         Self {
             head: Head::default(),
@@ -44,7 +44,7 @@ impl Snake {
         
         for b in &mut self.body {
             let current_pos = b.pos;
-            b.advance_to(last_pos.clone());
+            b.advance_to(last_pos);
             last_pos = current_pos;
         }
 
@@ -146,8 +146,7 @@ impl Snake {
 impl Renderable for Snake {
     fn render<'a>(
         &'a self,
-        rpass: &mut wgpu::RenderPass<'a>,
-        gfx: &'a Graphics,
+        rpass: &mut wgpu::RenderPass<'a>
     ) {
         rpass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
 

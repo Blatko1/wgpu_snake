@@ -86,13 +86,12 @@ impl World {
 impl Renderable for World {
     fn render<'a>(
         &'a self,
-        rpass: &mut wgpu::RenderPass<'a>,
-        gfx: &'a Graphics,
+        rpass: &mut wgpu::RenderPass<'a>
     ) {
-        self.map.render(rpass, gfx);
+        self.map.render(rpass);
 
         rpass.set_pipeline(&self.pipeline);
 
-        self.snake.render(rpass, gfx);
+        self.snake.render(rpass);
     }
 }

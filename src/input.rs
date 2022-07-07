@@ -27,6 +27,7 @@ impl InputManager {
         self.keyboard_state
     }
 
+    #[allow(dead_code)]
     pub fn get_mouse_delta(&self) -> MouseDelta {
         self.mouse_delta
     }

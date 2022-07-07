@@ -102,8 +102,7 @@ impl Graphics {
 pub trait Renderable {
     fn render<'a>(
         &'a self,
-        rpass: &mut wgpu::RenderPass<'a>,
-        gfx: &'a Graphics,
+        rpass: &mut wgpu::RenderPass<'a>
     );
 }
 
