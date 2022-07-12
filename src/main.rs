@@ -1,9 +1,9 @@
 mod engine;
+mod game_elements;
 mod graphics;
 mod input;
 mod map;
-mod snake;
-mod world;
+mod game;
 
 use std::time::{Duration, Instant};
 
@@ -97,17 +97,14 @@ fn run() {
                     time_delta = Instant::now();
                 } else {
                     *control_flow = ControlFlow::WaitUntil(
-                        Instant::now() + framerate_delta - elapsed
+                        Instant::now() + framerate_delta - elapsed,
                     );
                 }
-            
-            },
-            winit::event::Event::DeviceEvent { event, .. } => match event {
-                winit::event::DeviceEvent::MouseMotion { delta } => {
-                    engine.input.mouse_input(delta)
-                }
-                _ => (),
-            },
+            }
+            winit::event::Event::DeviceEvent {
+                event: winit::event::DeviceEvent::MouseMotion { delta },
+                ..
+            } => engine.input.mouse_input(delta),
             _ => (),
         }
     });

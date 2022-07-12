@@ -1,19 +1,23 @@
 use crate::{
-    graphics::Renderable, input::InputManager, world::World, Graphics,
+    graphics::Renderable, input::InputManager, game::Game, Graphics,
 };
 
 pub struct Engine {
     pub input: InputManager,
-    world: World,
+    game: Game,
 
-    tick_counter: u32
+    tick_counter: u32,
 }
 
 impl Engine {
     pub fn new(gfx: &Graphics) -> Self {
         let input = InputManager::init();
-        let world = World::new(gfx);
-        Self { input, world, tick_counter: 0 }
+        let game = Game::new(gfx);
+        Self {
+            input,
+            game,
+            tick_counter: 0,
+        }
     }
 
     pub fn render(&self, gfx: &Graphics) -> Result<(), wgpu::SurfaceError> {
@@ -49,7 +53,7 @@ impl Engine {
                     depth_stencil_attachment: None,
                 });
 
-            self.world.render(&mut rpass);
+            self.game.render(&mut rpass);
         }
 
         gfx.queue.submit(Some(encoder.finish()));
@@ -64,7 +68,7 @@ impl Engine {
         self.tick_counter += 1;
 
         if self.tick_counter >= 10 {
-            self.world.update(gfx);
+            self.game.update(gfx);
             self.tick_counter = 0;
         }
     }
@@ -72,12 +76,12 @@ impl Engine {
     fn process_input(&mut self) {
         let input = &mut self.input;
 
-        self.world.process_input(input);
+        self.game.process_input(input);
 
         input.reset();
     }
 
     pub fn on_resize(&mut self, gfx: &Graphics) {
-        self.world.on_resize(gfx);
+        self.game.on_resize(gfx);
     }
 }

@@ -1,11 +1,17 @@
+use std::fmt::{Display, Write};
+
 use wgpu::util::DeviceExt;
 
-use crate::graphics::{Graphics, LineVertex, Renderable};
+use crate::{
+    game_elements::{Position, TileUpdateData},
+    graphics::{Graphics, LineVertex, Quad, Renderable},
+};
 
 pub const MAP_SIZE: usize = 15;
 
 pub struct Map {
-    tiles: [bool; MAP_SIZE],
+    // Tile array marks occupied and unoccupied tiles.
+    pub tiles: [Tile; MAP_SIZE * MAP_SIZE],
     pub offsets: MeshOffsets,
 
     pipeline: wgpu::RenderPipeline,
@@ -14,11 +20,11 @@ pub struct Map {
 
 impl Map {
     pub fn new(gfx: &Graphics) -> Self {
-        let tiles = [false; MAP_SIZE];
+        let tiles = Self::generate_tiles();
 
         let shader_module = gfx
             .device
-            .create_shader_module(wgpu::include_wgsl!("shaders\\map.wgsl"));
+            .create_shader_module(wgpu::include_wgsl!("shaders/map.wgsl"));
 
         let layout = gfx.device.create_pipeline_layout(
             &wgpu::PipelineLayoutDescriptor {
@@ -68,6 +74,15 @@ impl Map {
             offsets,
             pipeline,
             mesh,
+        }
+    }
+
+    pub fn update_tiles_data(&mut self, data: TileUpdateData) {
+        let occupy_tile_index = Self::pos_to_tile_index(data.occupy);
+        self.tiles[occupy_tile_index].is_occupied = true;
+        if let Some(unoccupy) = data.unoccupy {
+            let unoccupy_tile_index = Self::pos_to_tile_index(unoccupy);
+            self.tiles[unoccupy_tile_index].is_occupied = false;
         }
     }
 
@@ -173,6 +188,24 @@ impl Map {
         self.mesh = mesh;
         self.offsets = offsets;
     }
+
+    fn pos_to_tile_index<P: Into<Position>>(pos: P) -> usize {
+        let pos = pos.into();
+        (pos.y_tile * MAP_SIZE as u32 + pos.x_tile - MAP_SIZE as u32) as usize
+    }
+
+    fn generate_tiles() -> [Tile; MAP_SIZE * MAP_SIZE] {
+        let mut tiles = Vec::new();
+        for i in 1..=MAP_SIZE {
+            for j in 0..MAP_SIZE {
+                tiles.push(Tile {
+                    is_occupied: false,
+                    pos: (j as u32, i as u32).into(),
+                })
+            }
+        }
+        tiles.try_into().unwrap()
+    }
 }
 
 fn line(x: f32, y: f32) -> LineVertex {
@@ -180,16 +213,47 @@ fn line(x: f32, y: f32) -> LineVertex {
 }
 
 impl Renderable for Map {
-    fn render<'a>(
-        &'a self,
-        rpass: &mut wgpu::RenderPass<'a>,
-    ) {
+    fn render<'a>(&'a self, rpass: &mut wgpu::RenderPass<'a>) {
         rpass.set_pipeline(&self.pipeline);
 
         rpass.set_vertex_buffer(0, self.mesh.vertex_buffer.slice(..));
 
         rpass.draw(0..self.mesh.vertices_count, 0..1);
     }
+}
+
+impl Display for Map {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let tile_width = 3;
+        let width = MAP_SIZE * tile_width + 1;
+        for i in 1..=MAP_SIZE {
+            f.write_str(&format!(
+                "\n{blank:->width$}\n",
+                blank = '-',
+                width = width
+            ))?;
+            f.write_char('|')?;
+            for j in 0..MAP_SIZE {
+                let tile = &self.tiles[Self::pos_to_tile_index((
+                    j as u32,
+                    MAP_SIZE as u32 + 1 - i as u32,
+                ))];
+                if tile.is_occupied {
+                    f.write_char('✅')?;
+                } else {
+                    f.write_char('❌')?;
+                }
+                f.write_char('|')?;
+            }
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct Tile {
+    pub is_occupied: bool,
+    pub pos: Position,
 }
 
 struct MapMesh {
@@ -205,4 +269,33 @@ pub struct MeshOffsets {
     pub y_offset: f32,
     pub map_width: f32,
     pub map_height: f32,
+}
+
+impl MeshOffsets {
+    pub fn calculate_factors(&self) -> MeshFactors {
+        // Factors used for turning map position (0-30) to real coordinates.
+        let to_x_coord_factor = self.map_width / MAP_SIZE as f32;
+        let to_y_coord_factor = self.map_height / MAP_SIZE as f32;
+        let shorten_by_factor = 0.05;
+        let shorten_width = shorten_by_factor * to_x_coord_factor;
+        let shorten_height = shorten_by_factor * to_y_coord_factor;
+
+        MeshFactors {
+            to_x_coord_factor,
+            to_y_coord_factor,
+            shorten_width,
+            shorten_height,
+        }
+    }
+}
+
+pub struct MeshFactors {
+    pub to_x_coord_factor: f32,
+    pub to_y_coord_factor: f32,
+    pub shorten_width: f32,
+    pub shorten_height: f32,
+}
+
+pub trait ElementMesh {
+    fn generate_mesh(&self, offsets: MeshOffsets) -> Vec<Quad>;
 }

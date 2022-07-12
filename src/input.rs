@@ -10,7 +10,7 @@ impl InputManager {
     pub fn init() -> Self {
         let keyboard_state = None;
         let mouse_delta = MouseDelta::default();
-        println!("delta: {:?}", mouse_delta);
+
         Self {
             keyboard_state,
             mouse_delta,

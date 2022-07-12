@@ -1,24 +1,29 @@
 use crate::{
+    game_elements::{AppleGen, Snake},
     graphics::{Graphics, Quad, Renderable},
+    input::InputManager,
     map::Map,
-    snake::Snake, input::InputManager,
 };
 
-pub struct World {
+pub struct Game {
     snake: Snake,
+    apple: AppleGen,
     map: Map,
 
     pipeline: wgpu::RenderPipeline,
 }
 
-impl World {
+impl Game {
     pub fn new(gfx: &Graphics) -> Self {
-        let snake = Snake::new(gfx);
         let map = Map::new(gfx);
+        let snake = Snake::new(gfx);
+        let apple = AppleGen::new(gfx);
+
+        apple.update_mesh(gfx, map.offsets);
 
         let shader_module = gfx
             .device
-            .create_shader_module(wgpu::include_wgsl!("shaders\\world.wgsl"));
+            .create_shader_module(wgpu::include_wgsl!("shaders/world.wgsl"));
 
         let layout = gfx.device.create_pipeline_layout(
             &wgpu::PipelineLayoutDescriptor {
@@ -63,13 +68,17 @@ impl World {
 
         Self {
             snake,
+            apple,
             map,
             pipeline,
         }
     }
 
     pub fn update(&mut self, gfx: &Graphics) {
-        self.snake.update(gfx, self.map.offsets);
+        self.snake.update(gfx, &mut self.apple, self.map.offsets);
+        self.map.update_tiles_data(self.snake.update_tile_data());
+        self.apple.update(gfx, &self.map);
+        println!("{}", self.map);
     }
 
     pub fn on_resize(&mut self, gfx: &Graphics) {
@@ -81,17 +90,15 @@ impl World {
     }
 }
 
-// Map, player, UI, Text, items are all rendered in different draw calls
+// Map, player, UI, Text, items are all rendered in different draw calls.
 
-impl Renderable for World {
-    fn render<'a>(
-        &'a self,
-        rpass: &mut wgpu::RenderPass<'a>
-    ) {
+impl Renderable for Game {
+    fn render<'a>(&'a self, rpass: &mut wgpu::RenderPass<'a>) {
         self.map.render(rpass);
 
         rpass.set_pipeline(&self.pipeline);
 
         self.snake.render(rpass);
+        self.apple.render(rpass);
     }
 }

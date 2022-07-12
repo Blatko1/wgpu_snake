@@ -1,24 +1,3 @@
-#[repr(C)]
-#[derive(bytemuck::Zeroable, bytemuck::Pod, Clone, Copy, Debug)]
-pub struct LineVertex {
-    pub pos: [f32; 2],
-}
-
-impl LineVertex {
-    pub fn vertex_buffer_layout<'a>() -> wgpu::VertexBufferLayout<'a> {
-        use std::mem::size_of;
-        wgpu::VertexBufferLayout {
-            array_stride: size_of::<LineVertex>() as wgpu::BufferAddress,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &[wgpu::VertexAttribute {
-                format: wgpu::VertexFormat::Float32x2,
-                offset: 0,
-                shader_location: 0,
-            }],
-        }
-    }
-}
-
 pub struct Graphics {
     pub device: wgpu::Device,
     pub queue: wgpu::Queue,
@@ -99,11 +78,25 @@ impl Graphics {
     }
 }
 
-pub trait Renderable {
-    fn render<'a>(
-        &'a self,
-        rpass: &mut wgpu::RenderPass<'a>
-    );
+#[repr(C)]
+#[derive(bytemuck::Zeroable, bytemuck::Pod, Clone, Copy, Debug)]
+pub struct LineVertex {
+    pub pos: [f32; 2],
+}
+
+impl LineVertex {
+    pub fn vertex_buffer_layout<'a>() -> wgpu::VertexBufferLayout<'a> {
+        use std::mem::size_of;
+        wgpu::VertexBufferLayout {
+            array_stride: size_of::<LineVertex>() as wgpu::BufferAddress,
+            step_mode: wgpu::VertexStepMode::Vertex,
+            attributes: &[wgpu::VertexAttribute {
+                format: wgpu::VertexFormat::Float32x2,
+                offset: 0,
+                shader_location: 0,
+            }],
+        }
+    }
 }
 
 #[repr(C)]
@@ -146,4 +139,8 @@ impl Quad {
             ],
         }
     }
+}
+
+pub trait Renderable {
+    fn render<'a>(&'a self, rpass: &mut wgpu::RenderPass<'a>);
 }
