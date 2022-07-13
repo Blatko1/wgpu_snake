@@ -4,10 +4,8 @@ use wgpu::util::DeviceExt;
 
 use crate::{
     game_elements::{Position, TileUpdateData},
-    graphics::{Graphics, LineVertex, Quad, Renderable},
+    graphics::{Graphics, LineVertex, Quad, Renderable}, game::MAP_SIZE,
 };
-
-pub const MAP_SIZE: usize = 15;
 
 pub struct Map {
     // Tile array marks occupied and unoccupied tiles.
@@ -24,7 +22,7 @@ impl Map {
 
         let shader_module = gfx
             .device
-            .create_shader_module(wgpu::include_wgsl!("shaders/map.wgsl"));
+            .create_shader_module(wgpu::include_wgsl!("shaders/line.wgsl"));
 
         let layout = gfx.device.create_pipeline_layout(
             &wgpu::PipelineLayoutDescriptor {

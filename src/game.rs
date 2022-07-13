@@ -1,9 +1,16 @@
 use crate::{
-    game_elements::{AppleGen, Snake},
+    game_elements::{AppleGen, Snake, Position},
     graphics::{Graphics, Quad, Renderable},
     input::InputManager,
     map::Map,
 };
+
+pub const MAP_SIZE: usize = 5;
+pub const STARTING_POS: Position = Position {
+    x_tile: 4,
+    y_tile: 4,
+};
+pub const APPLE_WORTH: usize = 5;
 
 pub struct Game {
     snake: Snake,
@@ -11,6 +18,8 @@ pub struct Game {
     map: Map,
 
     pipeline: wgpu::RenderPipeline,
+    /*bind_group: wgpu::BindGroup,
+    bind_group_layout: wgpu::BindGroupLayout*/
 }
 
 impl Game {
@@ -23,7 +32,7 @@ impl Game {
 
         let shader_module = gfx
             .device
-            .create_shader_module(wgpu::include_wgsl!("shaders/world.wgsl"));
+            .create_shader_module(wgpu::include_wgsl!("shaders/quad.wgsl"));
 
         let layout = gfx.device.create_pipeline_layout(
             &wgpu::PipelineLayoutDescriptor {
@@ -66,6 +75,36 @@ impl Game {
             },
         );
 
+
+
+        /*let size = wgpu::Extent3d {
+            width: todo!(),
+            height: todo!(),
+            depth_or_array_layers: 1,
+        };
+
+        let texture = gfx.device.create_texture(&wgpu::TextureDescriptor {
+            label: Some("Game Texture"),
+            size,
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format: wgpu::TextureFormat::Rgba8Unorm,
+            usage: wgpu::TextureUsages::TEXTURE_BINDING,
+        });
+
+        let bind_group = gfx.device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("Texture Bind Group Layout"),
+            entries: &[
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Texture { sample_type: (), view_dimension: (), multisampled: () },
+                    count: todo!(),
+                }
+            ],
+        })*/
+
         Self {
             snake,
             apple,
@@ -78,7 +117,7 @@ impl Game {
         self.snake.update(gfx, &mut self.apple, self.map.offsets);
         self.map.update_tiles_data(self.snake.update_tile_data());
         self.apple.update(gfx, &self.map);
-        println!("{}", self.map);
+        //println!("{}", self.map);
     }
 
     pub fn on_resize(&mut self, gfx: &Graphics) {

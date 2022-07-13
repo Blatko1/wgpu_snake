@@ -3,14 +3,8 @@ use rand::Rng;
 use crate::{
     graphics::{Graphics, Quad, Renderable},
     input::InputManager,
-    map::{ElementMesh, Map, MeshOffsets, Tile, MAP_SIZE},
+    map::{ElementMesh, Map, MeshOffsets, Tile}, game::{MAP_SIZE, APPLE_WORTH, STARTING_POS},
 };
-
-const STARTING_POS: Position = Position {
-    x_tile: 5,
-    y_tile: 5,
-};
-const APPLE_WORTH: usize = 5;
 
 pub struct Snake {
     head: Head,
