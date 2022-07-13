@@ -5,11 +5,12 @@ use crate::{
     map::Map,
 };
 
-pub const MAP_SIZE: usize = 5;
+pub const MAP_SIZE: usize = 15;
 pub const STARTING_POS: Position = Position {
     x_tile: 4,
     y_tile: 4,
 };
+pub const STARTING_SNAKE_SIZE: usize = 3;
 pub const APPLE_WORTH: usize = 5;
 
 pub struct Game {
@@ -114,7 +115,7 @@ impl Game {
     }
 
     pub fn update(&mut self, gfx: &Graphics) {
-        self.snake.update(gfx, &mut self.apple, self.map.offsets);
+        self.snake.update(gfx, &mut self.apple, &mut self.map);
         self.map.update_tiles_data(self.snake.update_tile_data());
         self.apple.update(gfx, &self.map);
         //println!("{}", self.map);

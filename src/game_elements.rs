@@ -3,7 +3,7 @@ use rand::Rng;
 use crate::{
     graphics::{Graphics, Quad, Renderable},
     input::InputManager,
-    map::{ElementMesh, Map, MeshOffsets, Tile}, game::{MAP_SIZE, APPLE_WORTH, STARTING_POS},
+    map::{ElementMesh, Map, MeshOffsets, Tile}, game::{MAP_SIZE, APPLE_WORTH, STARTING_POS, STARTING_SNAKE_SIZE},
 };
 
 pub struct Snake {
@@ -29,15 +29,7 @@ impl Snake {
             mapped_at_creation: false,
         });
 
-        let body = vec![
-            Body::default(),
-            Body::default(),
-            Body::default(),
-            Body::default(),
-            Body::default(),
-            Body::default(),
-            Body::default(),
-        ];
+        let body = Self::body();
 
         Self {
             head: Head::default(),
@@ -51,7 +43,8 @@ impl Snake {
         }
     }
 
-    pub fn update(&mut self, gfx: &Graphics, apple: &mut AppleGen, offsets: MeshOffsets) {
+    pub fn update(&mut self, gfx: &Graphics, apple: &mut AppleGen, map: &mut Map) {
+        let offsets = map.offsets;
         if let Some(dir) = self.queued_direction {
             self.head.change_dir(dir);
         }
@@ -74,6 +67,10 @@ impl Snake {
         if self.head.pos == apple.pos {
             apple.eat();
             self.extend(APPLE_WORTH);
+        } else if map.is_tile_occupied(self.head.pos) {
+            apple.eat();
+            map.reset();
+            self.reset();
         }
 
         self.update_mesh(gfx, offsets);
@@ -101,6 +98,11 @@ impl Snake {
         );
     }
 
+    fn reset(&mut self) {
+        self.head.pos = STARTING_POS;
+        self.body = Self::body();
+    }
+
     pub fn update_tile_data(&self) -> TileUpdateData {
         let occupy = self.head.pos;
         let unoccupy = self.last_unoccupied;
@@ -126,6 +128,14 @@ impl Snake {
                 })
             }
         }
+    }
+
+    fn body() -> Vec<Body> {
+        let mut body = Vec::new();
+        for _ in 0..STARTING_SNAKE_SIZE {
+            body.push(Body::default());
+        }
+        body
     }
 }
 

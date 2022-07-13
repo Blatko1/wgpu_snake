@@ -187,6 +187,15 @@ impl Map {
         self.offsets = offsets;
     }
 
+    pub fn is_tile_occupied(&self, pos: Position) -> bool {
+        let index = Self::pos_to_tile_index(pos);
+        self.tiles[index].is_occupied
+    }
+
+    pub fn reset(&mut self) {
+        self.tiles = Self::generate_tiles();
+    }
+
     fn pos_to_tile_index<P: Into<Position>>(pos: P) -> usize {
         let pos = pos.into();
         (pos.y_tile * MAP_SIZE as u32 + pos.x_tile - MAP_SIZE as u32) as usize
