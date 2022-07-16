@@ -148,8 +148,8 @@ impl ElementMesh for Snake {
         let y_offset = offsets.y_offset;
         let factors = offsets.calculate_factors();
 
-        let tex_top_left = [0.0, 0.0];
-        let tex_bottom_right = [1.0, 1.0];
+        let tex_top_left = [0.8, 0.7];
+        let tex_bottom_right = [0.9, 1.0];
 
         // Head
         let (pos_x, pos_y) = (
@@ -174,6 +174,9 @@ impl ElementMesh for Snake {
             tex_bottom_right,
         };
         quads.push(head);
+
+        let tex_top_left = [0.3, 0.1];
+        let tex_bottom_right = [0.1, 0.9];
 
         for b in &self.body {
             let (pos_x, pos_y) = (
@@ -360,8 +363,8 @@ impl ElementMesh for AppleGen {
         let y_offset = offsets.y_offset;
         let factors = offsets.calculate_factors();
 
-        let tex_top_left = [0.0, 0.0];
-        let tex_bottom_right = [1.0, 1.0];
+        let tex_top_left = [1.0, 1.0];
+        let tex_bottom_right = [1.0, 0.0];
 
         let (pos_x, pos_y) = (
             offsets.left_x + self.pos.x_tile as f32 * factors.to_x_coord_factor,
