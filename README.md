@@ -4,7 +4,7 @@ Popular game **Snake** implemented in **Rust** in the **_[wgpu](https://github.c
 
 ## Note
 
-Snake textures will probably never be added because of ugly code architecture.
+Snake textures will never be added because of ugly code architecture.
 
 ### Controls
 
