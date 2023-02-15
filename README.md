@@ -1,5 +1,7 @@
 # Snake in wgpu
 
+> Latest version is broken, but you can just pull older commits for it to work properly.
+
 Popular game **Snake** implemented in **Rust** in the **_[wgpu](https://github.com/gfx-rs/wgpu)_** graphics library.
 
 ## Note
